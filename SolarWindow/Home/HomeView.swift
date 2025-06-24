@@ -46,12 +46,12 @@ struct HomeView: View {
             }
             VStack {
                 VStack(spacing: 4) {
-                    Text("Solar Window")
+                    Text("Solara")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                     
-                    Text("East-facing Window")
+                    Text(homeVM.deviceName)
                         .font(.subheadline)
                         .foregroundColor(homeVM.isDaytime ? .black : .white)
                 }
@@ -98,42 +98,14 @@ struct HomeView: View {
                 
 
                 VStack {
-                    VStack() {
-                        ZStack {
-                            Rectangle()
-                                .fill(Color.gray)
-                                .frame(width: 20, height: 125)
-                                .cornerRadius(10)
-                                .offset(y: 50) //
-                            ZStack {
-                                Rectangle()
-                                    .fill(Color.blue)
-                                    .frame(width: 100, height: 100)
-                                    .cornerRadius(10)
-                                    .shadow(radius: 10)
-                                Image("panel")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 90, height: 90)
-                            }
-                            .rotationEffect(.degrees(45))
-                            .rotation3DEffect(
-                                .degrees(homeVM.currentMode == "Open" || homeVM.currentMode == "Manual"
-                                    ? homeVM.rotationDegree - servoDegreeOffset - 1
-                                    : homeVM.rotationDegree - servoDegreeOffset),
-                                axis: (x: 0, y: 1, z: 0), // Horizontal swivel
-                                perspective: 0.8
-                            )
-                            .animation(.easeInOut(duration: 1.5), value: homeVM.rotationDegree)
-                        }
-                        
+                    if homeVM.deviceType == "window" {
+                        WindowPanel(currentMode: homeVM.currentMode, rotationDegree: homeVM.rotationDegree, servoDegreeOffset: servoDegreeOffset)
+                            
+                    }else if homeVM.deviceType == "roof" {
+                        RoofPanel(currentMode: homeVM.currentMode, rotationDegree: homeVM.rotationDegree)
+                            
                     }
-                    .padding(.bottom, 50)
                     VStack(spacing: 4) {
-                        Text("\((abs(Int(homeVM.rotationDegree) - Int(servoDegreeOffset))))° \(Int(homeVM.rotationDegree) - Int(servoDegreeOffset) >= 0 ? "N" : "S")")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
                         Text("Mode")
                             .font(.subheadline)
                             .foregroundColor(homeVM.isDaytime ? .black : .white)
@@ -212,7 +184,8 @@ struct HomeView: View {
                             .shadow(radius: 5)
                         }
                     }
-                        .padding(10)
+                    .frame(height: 80)
+                    .padding(10)
                     Spacer()
                 }
                 VStack {

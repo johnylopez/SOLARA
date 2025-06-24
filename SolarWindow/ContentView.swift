@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        HomeView(homeVM: HomeViewModel())
+        //        HomeView(homeVM: HomeViewModel())
+        MenuView()
     }
 }

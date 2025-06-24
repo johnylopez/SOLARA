@@ -8,25 +8,21 @@
 import Foundation
 
 struct Home {
-    private var esp32BaseURL: String
-    
-    init() {
-        esp32BaseURL = "http://192.168.1.222"
-    }
+    let device: IoTDevice
     
     func sunPositionX(degree: Double) -> CGFloat {
         let radius: CGFloat = 250
         return radius * cos(CGFloat(degree) * .pi / 180)
     }
     
-    /// Calculates the vertical position of the sun based on the degree (top half of a circle)
     func sunPositionY(degree: Double) -> CGFloat {
         let radius: CGFloat = 250 // Radius of the arc
         return radius * sin(CGFloat(degree) * .pi / 180)
     }
     
     func sendRequestForMode(endpoint: String, completion: @escaping (String?) -> Void) {
-        guard let url = URL(string: "\(esp32BaseURL)\(endpoint)") else {
+        
+        guard let url = URL(string: "\(device.ip_address)\(endpoint)") else {
             completion(nil)
             return
         }
@@ -57,7 +53,7 @@ struct Home {
     
     
     func sendRequest(endpoint: String, degree: Double) {
-        guard let url = URL(string: "\(esp32BaseURL)\(endpoint)?degree=\(degree)") else { return }
+        guard let url = URL(string: "\(device.ip_address)\(endpoint)?degree=\(degree)") else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

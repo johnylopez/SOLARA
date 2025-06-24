@@ -10,20 +10,28 @@ import Foundation
 import Combine
 
 class HomeViewModel: ObservableObject {
+    let device: IoTDevice
+    
     @Published private(set) var homeModel: Home
     @Published var rotationDegree: Double = 90
     @Published var sunDegree: Double = 0
     @Published var currentMode: String
     @Published var isDaytime: Bool = true
+    @Published var deviceName: String
+    @Published var deviceType: String
     private var timerSubscription: AnyCancellable?
     private var dayTimerSubscription: AnyCancellable?
+    private var trackingTimerSubscription: AnyCancellable?
     
     private let minDegree: Double = 30
     private let maxDegree: Double = 150
     
-    init() {
-        homeModel = Home()
+    init(device: IoTDevice) {
+        self.device = device
+        homeModel = Home(device: device)
         currentMode = "Disconnected"
+        deviceName = device.name
+        deviceType = device.type
         getCurrentMode()
         getCurrentDegree()
         startTimeUpdateTimer()
@@ -74,6 +82,7 @@ class HomeViewModel: ObservableObject {
         if(self.currentMode == "Sun Tracking") {
             if(self.isDaytime) {
                 self.rotationDegree = minDegree + degreeIncrement
+                sendRequest(endpoint: "/servo/manual", degree: self.rotationDegree)
             }else {
                 self.rotationDegree = 90
             }
@@ -90,6 +99,23 @@ class HomeViewModel: ObservableObject {
     
     private func stopSunMovement() {
         timerSubscription?.cancel()
+    }
+    
+    private func startTrackingTimer() {
+        trackingTimerSubscription = Timer.publish(every: 6 * 60, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.getCurrentDegree()
+            }
+    }
+    
+    private func stopTrackingTimer() {
+        trackingTimerSubscription?.cancel()
+    }
+    
+    private func trackingUpdate() {
+        updateSunPositionBasedOnCurrentTime()
+        sendRequest(endpoint: "/servo/manual", degree: self.rotationDegree)
     }
     
     private func getCurrentMode() {
@@ -151,22 +177,28 @@ class HomeViewModel: ObservableObject {
                 self.rotationDegree = 90 
                 self.currentMode = "Closed"
                 sendRequest(endpoint: "/servo/closed", degree: 90)
+                stopTrackingTimer()
             case "Open":
                 self.rotationDegree = 180
                 self.currentMode = "Open"
                 sendRequest(endpoint: "/servo/open", degree: 180)
+                stopTrackingTimer()
             case "Sun Tracking":
                 self.currentMode = "Sun Tracking"
                 updateSunPositionBasedOnCurrentTime()
                 sendRequest(endpoint: "/servo/manual", degree: self.rotationDegree)
-                sendRequest(endpoint: "/servo/setSunTracking", degree: 0)
+//                sendRequest(endpoint: "/servo/setSunTracking", degree: self.)
+//                getCurrentDegree()
+                startTrackingTimer()
                 
             case "Manual":
                 sendRequest(endpoint: "/servo/setManual", degree: 0)
                 self.currentMode = "Manual"
+                stopTrackingTimer()
             default:
                 print("")
             }
         }
+        
     }
 }
