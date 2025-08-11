@@ -9,8 +9,10 @@ import SwiftUI
 import SceneKit
 
 struct HomeView: View {
+    @Binding var path: [DeviceNavigation]
     @ObservedObject var homeVM: HomeViewModel
     private let servoDegreeOffset: Double = 90
+    
     
     var body: some View {
         ZStack{
@@ -133,7 +135,8 @@ struct HomeView: View {
                             .shadow(radius: 5)
                         }
                         Button(action: {
-                            homeVM.setMode(mode: "Closed")
+//                            homeVM.setMode(mode: "Closed")
+                            homeVM.apicall()
                         }) {
                             VStack {
                                 Image("solar-panel-close")
@@ -205,6 +208,19 @@ struct HomeView: View {
                 } 
                 .frame(height: 100)
                 Spacer()
+            }
+        }
+        .onAppear{
+            homeVM.getCurrentMode()
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    path.append(.deviceInfoSettings(homeVM.device))
+                } label: {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.black)
+                }
             }
         }
     }

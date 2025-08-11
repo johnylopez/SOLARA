@@ -1,14 +1,25 @@
 import SwiftUI
 
+enum DeviceNavigation: Hashable {
+    case home(IoTDevice)
+    case deviceList
+    case setupLocation(name: String, ipaddress: String)
+    case setupOrientation(name: String, ipaddress: String, coodinates: Coordinates, locationName: String)
+    case setupCompleted
+    case generalSettings
+    case deviceInfoSettings(IoTDevice)
+}
+
 struct MenuView: View {
     @StateObject private var viewModel = DeviceMenuViewModel()
+    @State private var path: [DeviceNavigation] = []
     
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $path) {
             ZStack {
                 // Background color
                 Color(.systemGray6)
@@ -95,17 +106,55 @@ struct MenuView: View {
                         .font(.headline)
                         .padding(.horizontal)
 
-                    // 📱 Devices Grid
+                    // 📱 Devices Gridw
                     LazyVGrid(columns: columns, spacing: 20) {
                         ForEach(viewModel.devices) { device in
-                            NavigationLink(destination: HomeView(homeVM: HomeViewModel(device: device))) {
+                            Button(action: {
+                                path.append(.home(device))
+                            }) {
                                 DeviceCardView(device: device)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
+
+                        Button(action: {
+                            path.append(.deviceList)
+                        }) {
+                            VStack(spacing: 10) {
+                                Image("solar-panel-open")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 60, height: 60)
+                                Text("Add new device")
+                                    .font(.headline)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .shadow(radius: 2)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal)
-
+                    .navigationDestination(for: DeviceNavigation.self) { destination in
+                        switch destination {
+                        case .home(let device):
+                            HomeView(path: $path, homeVM: HomeViewModel(device: device))
+                        case .deviceList:
+                            DeviceListView(path: $path)
+                        case .setupCompleted:
+                            SetupCompleteView(path: $path)
+                        case .setupLocation(let name, let ipaddress):
+                            SetupDeviceLocation(name: name, ipaddress: ipaddress, path: $path)
+                        case .setupOrientation(let name, let ipaddress, let coordinates, let locationName):
+                            SetupDeviceOrientation(name: name, ipaddress: ipaddress, coordinates: coordinates, locationName: locationName, path: $path, viewModel: viewModel)
+                        case .generalSettings:
+                            GeneralSettings(viewModel: viewModel)
+                        case .deviceInfoSettings(let device):
+                            DeviceInfoSettings(device: device, viewModel: viewModel)
+                        }
+                    }
                     Spacer()
 
                     // 📍 Footer
@@ -121,7 +170,18 @@ struct MenuView: View {
                 .padding(.top)
                 .navigationTitle("Welcome Home")
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        path.append(.generalSettings)
+                    } label: {
+                        Image(systemName: "gear")
+                            .foregroundColor(.black)
+                    }
+                }
+            }
         }
+        
     }
 
     

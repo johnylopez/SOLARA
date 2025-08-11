@@ -7,11 +7,17 @@
 
 import Foundation
 
-struct IoTDevice: Identifiable {
-    let id = UUID()
-    let name: String
-    let type: String
-    let ip_address: String
+struct Coordinates: Codable, Hashable {
+    var latitude: Double
+    var longitude: Double
 }
 
-
+struct IoTDevice: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var name: String
+    var type: String
+    var orientation: Double
+    var ip_address: String
+    var location: Coordinates
+    var locationName: String
+}

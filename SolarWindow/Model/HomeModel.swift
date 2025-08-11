@@ -26,7 +26,7 @@ struct Home {
             completion(nil)
             return
         }
-        
+        print(url)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
@@ -49,11 +49,31 @@ struct Home {
             }
         }.resume()
     }
-
+    
+    func apiCall() {
+        guard let url = URL(string: "\(device.ip_address)/servo/apicall") else { print("FAILED")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Response code: \(httpResponse.statusCode)")
+            }
+        }.resume()
+        
+    }
     
     
     func sendRequest(endpoint: String, degree: Double) {
+       
         guard let url = URL(string: "\(device.ip_address)\(endpoint)?degree=\(degree)") else { return }
+        
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

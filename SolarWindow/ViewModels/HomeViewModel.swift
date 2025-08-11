@@ -19,6 +19,8 @@ class HomeViewModel: ObservableObject {
     @Published var isDaytime: Bool = true
     @Published var deviceName: String
     @Published var deviceType: String
+    @Published var deviceOrientation: Double
+    @Published var deviceLocation: String
     private var timerSubscription: AnyCancellable?
     private var dayTimerSubscription: AnyCancellable?
     private var trackingTimerSubscription: AnyCancellable?
@@ -32,6 +34,8 @@ class HomeViewModel: ObservableObject {
         currentMode = "Disconnected"
         deviceName = device.name
         deviceType = device.type
+        deviceOrientation = device.orientation
+        deviceLocation = device.locationName
         getCurrentMode()
         getCurrentDegree()
         startTimeUpdateTimer()
@@ -118,7 +122,7 @@ class HomeViewModel: ObservableObject {
         sendRequest(endpoint: "/servo/manual", degree: self.rotationDegree)
     }
     
-    private func getCurrentMode() {
+    func getCurrentMode() {
         homeModel.sendRequestForMode(endpoint: "/servo/mode") { responseBody in
             if let response = responseBody {
                 print(response)
@@ -164,6 +168,10 @@ class HomeViewModel: ObservableObject {
     
     func getSunPositionY(degree: Double) -> Double {
         return homeModel.sunPositionY(degree: degree)
+    }
+    
+    func apicall() {
+        homeModel.apiCall()
     }
     
     func updateServoPosition(degree: Double){
