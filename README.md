@@ -34,11 +34,3 @@ To run this app locally on your iPhone or simulator:
 2. **Open the project in xcode**
 
 Double click the .xcodeproj file.
-
-3. **To connect with your ESP32 or add a new one:**
-
-Change the IP address of the IoTDevices object in /SolarWindow/ViewModels/DeviceMenuViewModel.swift 
-
-Example:
-
-    IoTDevice(name: "Front Window", type: "window",ip_address: "YOUR_IP_ADDRESS")
